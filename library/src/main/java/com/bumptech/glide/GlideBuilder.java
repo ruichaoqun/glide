@@ -435,26 +435,32 @@ public final class GlideBuilder {
 
   @NonNull
   Glide build(@NonNull Context context) {
+    //资源请求加载器，返回ExecutorService的代理类GlideExecutor，实际上就是一个线程池
     if (sourceExecutor == null) {
       sourceExecutor = GlideExecutor.newSourceExecutor();
     }
 
+    //本地缓存加载器，返回ExecutorService的代理类GlideExecutor，也是一个线程池
     if (diskCacheExecutor == null) {
       diskCacheExecutor = GlideExecutor.newDiskCacheExecutor();
     }
 
+    //动画加载器，也是一个线程池，返回ExecutorService的代理类GlideExecutor
     if (animationExecutor == null) {
       animationExecutor = GlideExecutor.newAnimationExecutor();
     }
 
+    //内存大小计算器
     if (memorySizeCalculator == null) {
       memorySizeCalculator = new MemorySizeCalculator.Builder(context).build();
     }
 
+    //网络连接监听器工厂，用于监听网络状态
     if (connectivityMonitorFactory == null) {
       connectivityMonitorFactory = new DefaultConnectivityMonitorFactory();
     }
 
+    //图片缓存池，用于bitmap资源的缓存和回收，避免大量创建和回收而造成的内存抖动
     if (bitmapPool == null) {
       int size = memorySizeCalculator.getBitmapPoolSize();
       if (size > 0) {
@@ -464,18 +470,22 @@ public final class GlideBuilder {
       }
     }
 
+    //数组资源缓存池
     if (arrayPool == null) {
       arrayPool = new LruArrayPool(memorySizeCalculator.getArrayPoolSizeInBytes());
     }
 
+    //内存缓存，用于缓存完成加载和显示的图片资源数据
     if (memoryCache == null) {
       memoryCache = new LruResourceCache(memorySizeCalculator.getMemoryCacheSize());
     }
 
+    //本地磁盘缓存器，默认存储地址为app内部私密目录
     if (diskCacheFactory == null) {
       diskCacheFactory = new InternalCacheDiskCacheFactory(context);
     }
 
+    //图片加载引擎
     if (engine == null) {
       engine =
           new Engine(
@@ -488,15 +498,18 @@ public final class GlideBuilder {
               isActiveResourceRetentionAllowed);
     }
 
+    //默认请求监听集合
     if (defaultRequestListeners == null) {
       defaultRequestListeners = Collections.emptyList();
     } else {
       defaultRequestListeners = Collections.unmodifiableList(defaultRequestListeners);
     }
 
+    //请求管理索引器
     RequestManagerRetriever requestManagerRetriever =
         new RequestManagerRetriever(requestManagerFactory);
 
+    //创建Glide
     return new Glide(
         context,
         engine,

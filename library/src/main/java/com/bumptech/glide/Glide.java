@@ -159,6 +159,7 @@ public class Glide implements ComponentCallbacks2 {
    * Get the singleton.
    *
    * @return the singleton
+   * Glide对象使用单例模式构建
    */
   @NonNull
   public static Glide get(@NonNull Context context) {
@@ -173,6 +174,8 @@ public class Glide implements ComponentCallbacks2 {
     return glide;
   }
 
+
+  //Glide初始化
   private static void checkAndInitializeGlide(@NonNull Context context) {
     // In the thread running initGlide(), one or more classes may call Glide.get(context).
     // Without this check, those calls could trigger infinite recursion.
@@ -226,8 +229,15 @@ public class Glide implements ComponentCallbacks2 {
   @SuppressWarnings("deprecation")
   private static void initializeGlide(@NonNull Context context, @NonNull GlideBuilder builder) {
     Context applicationContext = context.getApplicationContext();
+    //Glide在使用的时候可能需要一些系统级配置，例如缓存位置，缓存大小，网络加载模块等等，在Glide4中提供了GlideModule注解
+    //来进行配置，此处会自动获取到Glide注解时自动产生的一个module配置器
     GeneratedAppGlideModule annotationGeneratedModule = getAnnotationGeneratedGlideModules();
+    //Glide3.x中进行系统配置使用的是在manifest清单文件中配置meta-data
+    //<meta-data android:name="com.test.GlideConfiguration"
+    //           android:value="GlideModule"/>
+    //目前已不建议使用此模式，推荐使用上面注解模式
     List<com.bumptech.glide.module.GlideModule> manifestModules = Collections.emptyList();
+    //如果没有注解模式或者注解模式允许使用清单注解
     if (annotationGeneratedModule == null || annotationGeneratedModule.isManifestParsingEnabled()) {
       manifestModules = new ManifestParser(applicationContext).parse();
     }
@@ -255,17 +265,23 @@ public class Glide implements ComponentCallbacks2 {
       }
     }
 
+    //请求检索器工厂的生成
     RequestManagerRetriever.RequestManagerFactory factory =
         annotationGeneratedModule != null
             ? annotationGeneratedModule.getRequestManagerFactory() : null;
+    //设置请求检索器工厂
     builder.setRequestManagerFactory(factory);
+    //逐个回调GlideModule，将其中的配置放入builder中
     for (com.bumptech.glide.module.GlideModule module : manifestModules) {
       module.applyOptions(applicationContext, builder);
     }
+    //将注解生成的GlideModule中的配置设置到build中
     if (annotationGeneratedModule != null) {
       annotationGeneratedModule.applyOptions(applicationContext, builder);
     }
+    //生成Glide对象
     Glide glide = builder.build(applicationContext);
+    //在glide对象构造完毕之后再检索系统配置，对比与上面的相当于延迟到glide创建完成之后但还没有去调用的时候 再进行配置
     for (com.bumptech.glide.module.GlideModule module : manifestModules) {
       try {
         module.registerComponents(applicationContext, glide, glide.registry);
@@ -689,11 +705,13 @@ public class Glide implements ComponentCallbacks2 {
   private static RequestManagerRetriever getRetriever(@Nullable Context context) {
     // Context could be null for other reasons (ie the user passes in null), but in practice it will
     // only occur due to errors with the Fragment lifecycle.
+    //判空
     Preconditions.checkNotNull(
         context,
         "You cannot start a load on a not yet attached View or a Fragment where getActivity() "
             + "returns null (which usually occurs when getActivity() is called before the Fragment "
             + "is attached or after the Fragment is destroyed).");
+    //初始化Glide并调用getRequestManagerRetriever方法获取RequestManagerRetriever实例
     return Glide.get(context).getRequestManagerRetriever();
   }
 

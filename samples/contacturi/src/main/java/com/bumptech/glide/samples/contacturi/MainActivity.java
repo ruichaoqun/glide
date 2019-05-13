@@ -15,6 +15,8 @@ import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+
+import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 import com.bumptech.glide.util.Preconditions;
@@ -67,12 +69,14 @@ public class MainActivity extends Activity {
     findViewById(R.id.button_find).setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
-        Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
-                                       Uri.encode(numberEntry.getText().toString()));
-        GlideApp.with(MainActivity.this)
-                .load(uri)
-                .override(Target.SIZE_ORIGINAL)
-                .into(imageViewLookup);
+        Glide.with(MainActivity.this).load("http://img1.imgtn.bdimg.com/it/u=1393987749,3422146058&fm=26&gp=0.jpg").into(imageViewContact);
+
+//        Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
+//                                       Uri.encode(numberEntry.getText().toString()));
+//        GlideApp.with(MainActivity.this)
+//                .load(uri)
+//                .override(Target.SIZE_ORIGINAL)
+//                .into(imageViewLookup);
         }
     });
   }
